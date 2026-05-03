@@ -14,8 +14,14 @@ class UpdateItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'  => ['sometimes', 'string', 'max:255'],
-            'photo' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'name' => ['sometimes', 'string', 'max:255'],
+            'photo' => [
+                'sometimes',
+                'nullable',
+                'image',
+                'mimes:jpg,png,jpeg',
+                'max:2048',
+            ],
         ];
     }
 }

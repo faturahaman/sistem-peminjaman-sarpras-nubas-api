@@ -3,6 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Classes;
+use App\Models\Item;
+use App\Models\Student;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -17,8 +20,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::factory()->create([
-            'name'     => 'Admin',
-            'email'    => 'admin@example.com',
+            'name' => 'Admin',
+            'email' => 'admin@example.com',
             'password' => bcrypt('admin123'),
         ]);
 
@@ -55,8 +58,38 @@ class DatabaseSeeder extends Seeder
             ['class' => '13 AK 2', 'major' => 'Analis Kimia'],
         ];
 
-        foreach ([...$pplgClasses, ...$farmasiClasses, ...$akClasses] as $data) {
-            Classes::create($data);
+        foreach (
+            [...$pplgClasses, ...$farmasiClasses, ...$akClasses] as $data
+        ) {
+            $class = Classes::create($data);
+
+            // Seed 10 students for each class
+            Student::factory(10)->create([
+                'class_id' => $class->id,
+            ]);
+        }
+
+        // ── Seed Items and Units ──────────────────────────────────────────
+        $itemNames = [
+            'Laptop ASUS ROG',
+            'Projector EPSON',
+            'Kamera Canon EOS',
+            'Microphone Boya',
+            'Tripod Excell',
+            'Kabel HDMI 5m',
+            'Converter Type-C to HDMI',
+            'Wacom Intuos',
+            'Speaker Polytron',
+            'Pointer Logitech',
+        ];
+
+        foreach ($itemNames as $name) {
+            $item = Item::create(['name' => $name]);
+
+            // Seed 5 units for each item
+            Unit::factory(5)->create([
+                'item_id' => $item->id,
+            ]);
         }
     }
 }
