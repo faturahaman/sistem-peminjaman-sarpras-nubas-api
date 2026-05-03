@@ -1,58 +1,232 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# API Inventaris Sarpras — Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+REST API untuk sistem peminjaman sarana dan prasarana (sarpras) sekolah. Dibangun dengan Laravel 13, mendukung manajemen kelas, siswa, barang, unit QR code, dan transaksi peminjaman/pengembalian.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tech Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Layer | Teknologi |
+|---|---|
+| Framework | Laravel 13 (PHP 8.3+) |
+| Auth | Laravel Sanctum (token-based) |
+| Database | MySQL |
+| QR Code | simplesoftwareio/simple-qrcode |
+| Export Excel | maatwebsite/excel |
+| Testing | PestPHP |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Persyaratan
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP >= 8.3
+- Composer
+- MySQL
+- Extension PHP: `gd` atau `imagick` (untuk QR code SVG)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Instalasi
 
 ```bash
-composer require laravel/boost --dev
+# 1. Clone & masuk ke folder
+cd api-inventaris
 
-php artisan boost:install
+# 2. Install dependencies
+composer install
+
+# 3. Salin file environment
+cp .env.example .env
+
+# 4. Generate app key
+php artisan key:generate
+
+# 5. Konfigurasi database di .env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=api_inventaris
+DB_USERNAME=root
+DB_PASSWORD=
+
+# 6. Jalankan migrasi + seeder
+php artisan migrate --seed
+
+# 7. Buat symlink storage (untuk foto barang)
+php artisan storage:link
+
+# 8. Jalankan server
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Server berjalan di `http://localhost:8000`.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Akun Default (Seeder)
 
-## Code of Conduct
+| Field | Value |
+|---|---|
+| Email | `admin@example.com` |
+| Password | `admin123` |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Struktur Database
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```
+users               — akun admin
+classes             — data kelas (grade, major, rombel)
+students            — data siswa (nis, name, class_id)
+items               — data barang (name, photo)
+units               — unit fisik barang (qr_code, status)
+transactions        — transaksi peminjaman (student_id, borrow_time, due_time, status)
+transaction_details — detail unit per transaksi (transaction_id, unit_id, status)
+```
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## API Endpoints
+
+Base URL: `http://localhost:8000/api`
+
+### Auth
+
+| Method | Endpoint | Auth | Keterangan |
+|---|---|---|---|
+| POST | `/login` | ❌ | Login, mendapat token |
+| POST | `/logout` | ✅ | Logout, hapus token |
+| GET | `/me` | ✅ | Info user yang login |
+
+### Kelas
+
+| Method | Endpoint | Auth | Keterangan |
+|---|---|---|---|
+| GET | `/classes` | ❌ | List semua kelas (+ `students_count`) |
+| POST | `/classes` | ✅ | Tambah kelas baru |
+| GET | `/classes/{id}` | ✅ | Detail kelas + daftar siswa |
+| PUT | `/classes/{id}` | ✅ | Update kelas |
+| DELETE | `/classes/{id}` | ✅ | Hapus kelas (gagal jika masih ada siswa) |
+
+Query params `GET /classes`: `?major=PPLG` atau `?grade=10`
+
+Response menyertakan field `full_name` (contoh: `"10 PPLG 1"`).
+
+### Siswa
+
+| Method | Endpoint | Auth | Keterangan |
+|---|---|---|---|
+| GET | `/students` | ❌ | List siswa, filter `?class_id=1` |
+| POST | `/students` | ✅ | Tambah siswa |
+| GET | `/students/{id}` | ✅ | Detail siswa |
+| PUT | `/students/{id}` | ✅ | Update siswa |
+| DELETE | `/students/{id}` | ✅ | Hapus siswa |
+
+### Barang
+
+| Method | Endpoint | Auth | Keterangan |
+|---|---|---|---|
+| GET | `/items` | ✅ | List barang + `units_count` + `available_units_count` |
+| POST | `/items` | ✅ | Tambah barang (multipart/form-data, field `photo` opsional) |
+| GET | `/items/{id}` | ✅ | Detail barang |
+| POST | `/items/{id}` | ✅ | Update barang (gunakan `_method=PUT` untuk multipart) |
+| DELETE | `/items/{id}` | ✅ | Hapus barang (gagal jika ada unit dipinjam) |
+
+### Unit & QR Code
+
+| Method | Endpoint | Auth | Keterangan |
+|---|---|---|---|
+| GET | `/items/{id}/units` | ✅ | List unit milik barang |
+| POST | `/items/{id}/units` | ✅ | Generate unit baru (`{ "jumlah": 5 }`) |
+| GET | `/units/{id}/qr` | ✅ | Tampilkan QR code (SVG) |
+| DELETE | `/units/{id}` | ✅ | Hapus unit (gagal jika sedang dipinjam) |
+
+### Scan
+
+| Method | Endpoint | Auth | Keterangan |
+|---|---|---|---|
+| POST | `/scan` | ❌ | Scan QR untuk pinjam — validasi unit tersedia |
+| POST | `/return/scan` | ❌ | Scan QR untuk kembali — validasi unit dalam transaksi |
+
+### Transaksi
+
+| Method | Endpoint | Auth | Keterangan |
+|---|---|---|---|
+| GET | `/transactions` | ✅ | List transaksi (paginasi, filter `?status=active&per_page=50`) |
+| POST | `/transactions` | ✅ | Buat transaksi peminjaman |
+| GET | `/transactions/{id}` | ✅ | Detail transaksi |
+| POST | `/transactions/{id}/return` | ✅ | Proses pengembalian unit |
+| GET | `/transactions/export` | ✅ | Download Excel laporan transaksi |
+| GET | `/transactions/rekap` | ✅ | Download Excel rekap gabungan |
+
+---
+
+## Contoh Request
+
+### Login
+```http
+POST /api/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "admin123"
+}
+```
+
+### Tambah Kelas
+```http
+POST /api/classes
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "grade": 10,
+  "major": "PPLG",
+  "rombel": 1
+}
+```
+
+### Buat Transaksi Peminjaman
+```http
+POST /api/transactions
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "student_id": 1,
+  "units": [3, 7],
+  "due_time": "2026-05-03 17:00:00",
+  "notes": "Untuk praktikum"
+}
+```
+
+---
+
+## Validasi Penting
+
+- `grade` harus salah satu dari: `10`, `11`, `12`, `13`
+- Kombinasi `grade + major + rombel` harus unik
+- `NIS` siswa harus unik
+- `due_time` harus di masa depan
+- Unit yang sedang dipinjam tidak bisa dihapus
+- Kelas yang masih punya siswa tidak bisa dihapus
+
+---
+
+## Testing
+
+```bash
+php artisan test
+# atau
+./vendor/bin/pest
+```
+
+---
+
+## Format QR Code
+
+```
+INV-{item_id_4digit}-{sequence_3digit}-{random_hex_4char}
+Contoh: INV-0001-003-A7F2
+```
