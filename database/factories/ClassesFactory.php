@@ -15,26 +15,19 @@ class ClassesFactory extends Factory
     public function definition(): array
     {
         $majors = [
-            'PPLG'         => ['10', '11', '12'],
-            'Farmasi'      => ['10', '11', '12'],
-            'Analis Kimia' => ['10', '11', '12', '13'],
+            'PPLG'         => [10, 11, 12],
+            'Farmasi'      => [10, 11, 12],
+            'Analis Kimia' => [10, 11, 12, 13],
         ];
 
-        $major    = $this->faker->randomElement(array_keys($majors));
-        $angkatan = $this->faker->randomElement($majors[$major]);
-        $nomor    = $this->faker->numberBetween(1, 2);
-
-        // Singkatan jurusan untuk nama kelas
-        $singkatan = match ($major) {
-            'PPLG'         => 'PPLG',
-            'Farmasi'      => 'Farmasi',
-            'Analis Kimia' => 'AK',
-            default        => $major,
-        };
+        $major  = $this->faker->randomElement(array_keys($majors));
+        $grade  = $this->faker->randomElement($majors[$major]);
+        $rombel = $this->faker->numberBetween(1, 2);
 
         return [
-            'class' => "{$angkatan} {$singkatan} {$nomor}",
-            'major' => $major,
+            'grade'  => $grade,
+            'major'  => $major,
+            'rombel' => $rombel,
         ];
     }
 }

@@ -22,8 +22,27 @@ class StoreClassRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'class' => ['required', 'string', 'max:255'],
-            'major' => ['required', 'string', 'max:255'],
+            'grade' => [
+                'required',
+                'integer',
+                'in:10,11,12,13',
+                \Illuminate\Validation\Rule::unique('classes')->where(function ($query) {
+                    return $query
+                        ->where('major', $this->input('major'))
+                        ->where('rombel', $this->input('rombel'));
+                }),
+            ],
+            'major'  => ['required', 'string', 'max:100'],
+            'rombel' => ['required', 'integer', 'min:1'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'grade.in'         => 'Tingkat kelas harus 10, 11, 12, atau 13.',
+            'grade.unique'     => 'Kombinasi kelas, jurusan, dan rombel sudah ada.',
+            'rombel.min'       => 'Rombel minimal bernilai 1.',
         ];
     }
 }

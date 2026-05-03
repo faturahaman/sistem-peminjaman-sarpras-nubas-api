@@ -20,10 +20,12 @@ class TransactionsController extends Controller
 
     public function index(Request $request)
     {
+        $perPage = min((int) ($request->per_page ?? 15), 500); // cap at 500
+
         $transactions = Transaction::with(['student.class', 'details.unit.item'])
             ->when($request->student_id, fn ($q) => $q->where('student_id', $request->student_id))
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
-            ->paginate(15);
+            ->paginate($perPage);
 
         return response()->json($transactions);
     }
@@ -60,5 +62,10 @@ class TransactionsController extends Controller
     public function export()
     {
         return $this->exportService->exportTransactions();
+    }
+
+    public function exportRekap()
+    {
+        return $this->exportService->exportRekap();
     }
 }

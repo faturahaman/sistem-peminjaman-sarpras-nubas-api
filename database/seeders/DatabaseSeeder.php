@@ -25,42 +25,36 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('admin123'),
         ]);
 
-        // ── Kelas PPLG (angkatan 10, 11, 12) ──────────────────────────────
-        $pplgClasses = [
-            ['class' => '10 PPLG 1', 'major' => 'PPLG'],
-            ['class' => '10 PPLG 2', 'major' => 'PPLG'],
-            ['class' => '11 PPLG 1', 'major' => 'PPLG'],
-            ['class' => '11 PPLG 2', 'major' => 'PPLG'],
-            ['class' => '12 PPLG 1', 'major' => 'PPLG'],
-            ['class' => '12 PPLG 2', 'major' => 'PPLG'],
+        // ── Class definitions using the new grade / major / rombel schema ──
+        $classDefinitions = [
+            // PPLG — grades 10, 11, 12 with 2 rombel each
+            ['grade' => 10, 'major' => 'PPLG',        'rombel' => 1],
+            ['grade' => 10, 'major' => 'PPLG',        'rombel' => 2],
+            ['grade' => 11, 'major' => 'PPLG',        'rombel' => 1],
+            ['grade' => 11, 'major' => 'PPLG',        'rombel' => 2],
+            ['grade' => 12, 'major' => 'PPLG',        'rombel' => 1],
+            ['grade' => 12, 'major' => 'PPLG',        'rombel' => 2],
+
+            // Farmasi — grades 10, 11, 12 with 2 rombel each
+            ['grade' => 10, 'major' => 'Farmasi',     'rombel' => 1],
+            ['grade' => 10, 'major' => 'Farmasi',     'rombel' => 2],
+            ['grade' => 11, 'major' => 'Farmasi',     'rombel' => 1],
+            ['grade' => 11, 'major' => 'Farmasi',     'rombel' => 2],
+            ['grade' => 12, 'major' => 'Farmasi',     'rombel' => 1],
+            ['grade' => 12, 'major' => 'Farmasi',     'rombel' => 2],
+
+            // Analis Kimia — grades 10–13 (4-year program) with 2 rombel each
+            ['grade' => 10, 'major' => 'Analis Kimia', 'rombel' => 1],
+            ['grade' => 10, 'major' => 'Analis Kimia', 'rombel' => 2],
+            ['grade' => 11, 'major' => 'Analis Kimia', 'rombel' => 1],
+            ['grade' => 11, 'major' => 'Analis Kimia', 'rombel' => 2],
+            ['grade' => 12, 'major' => 'Analis Kimia', 'rombel' => 1],
+            ['grade' => 12, 'major' => 'Analis Kimia', 'rombel' => 2],
+            ['grade' => 13, 'major' => 'Analis Kimia', 'rombel' => 1],
+            ['grade' => 13, 'major' => 'Analis Kimia', 'rombel' => 2],
         ];
 
-        // ── Kelas Farmasi (angkatan 10, 11, 12) ───────────────────────────
-        $farmasiClasses = [
-            ['class' => '10 Farmasi 1', 'major' => 'Farmasi'],
-            ['class' => '10 Farmasi 2', 'major' => 'Farmasi'],
-            ['class' => '11 Farmasi 1', 'major' => 'Farmasi'],
-            ['class' => '11 Farmasi 2', 'major' => 'Farmasi'],
-            ['class' => '12 Farmasi 1', 'major' => 'Farmasi'],
-            ['class' => '12 Farmasi 2', 'major' => 'Farmasi'],
-        ];
-
-        // ── Kelas Analis Kimia (angkatan 10, 11, 12, 13) ──────────────────
-        // AK punya angkatan 13 karena masa studi 4 tahun
-        $akClasses = [
-            ['class' => '10 AK 1', 'major' => 'Analis Kimia'],
-            ['class' => '10 AK 2', 'major' => 'Analis Kimia'],
-            ['class' => '11 AK 1', 'major' => 'Analis Kimia'],
-            ['class' => '11 AK 2', 'major' => 'Analis Kimia'],
-            ['class' => '12 AK 1', 'major' => 'Analis Kimia'],
-            ['class' => '12 AK 2', 'major' => 'Analis Kimia'],
-            ['class' => '13 AK 1', 'major' => 'Analis Kimia'],
-            ['class' => '13 AK 2', 'major' => 'Analis Kimia'],
-        ];
-
-        foreach (
-            [...$pplgClasses, ...$farmasiClasses, ...$akClasses] as $data
-        ) {
+        foreach ($classDefinitions as $data) {
             $class = Classes::create($data);
 
             // Seed 10 students for each class
