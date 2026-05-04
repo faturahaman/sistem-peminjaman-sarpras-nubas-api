@@ -30,7 +30,7 @@ REST API untuk sistem peminjaman sarana dan prasarana (sarpras) sekolah. Dibangu
 
 ```bash
 # 1. Clone & masuk ke folder
-cd api-inventaris
+cd your_folder_name 
 
 # 2. Install dependencies
 composer install
@@ -50,7 +50,7 @@ DB_USERNAME=root
 DB_PASSWORD=
 
 # 6. Jalankan migrasi + seeder
-php artisan migrate --seed
+php artisan migrate
 
 # 7. Buat symlink storage (untuk foto barang)
 php artisan storage:link
