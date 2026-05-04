@@ -22,10 +22,27 @@ class TransactionsController extends Controller
     {
         $perPage = min((int) ($request->per_page ?? 15), 500); // cap at 500
 
-        $transactions = Transaction::with(['student.class', 'details.unit.item'])
-            ->when($request->student_id, fn ($q) => $q->where('student_id', $request->student_id))
-            ->when($request->status, fn ($q) => $q->where('status', $request->status))
+        $transactions = Transaction::with([
+            "student.class",
+            "details.unit.item",
+        ])
+            ->when(
+                $request->student_id,
+                fn($q) => $q->where("student_id", $request->student_id),
+            )
+            ->when(
+                $request->status,
+                fn($q) => $q->where("status", $request->status),
+            )
             ->paginate($perPage);
+
+        // Append full_name accessor to each class
+        $transactions->through(function ($tx) {
+            if ($tx->student && $tx->student->class) {
+                $tx->student->class->append("full_name");
+            }
+            return $tx;
+        });
 
         return response()->json($transactions);
     }
@@ -39,22 +56,39 @@ class TransactionsController extends Controller
             $request->notes,
         );
 
-        return response()->json(
-            $transaction->load(['student.class', 'details.unit.item']),
-            201
-        );
+        $transaction->load(["student.class", "details.unit.item"]);
+
+        if ($transaction->student && $transaction->student->class) {
+            $transaction->student->class->append("full_name");
+        }
+
+        return response()->json($transaction, 201);
     }
 
     public function show(Transaction $transaction)
     {
-        return response()->json(
-            $transaction->load(['student.class', 'details.unit.item'])
-        );
+        $transaction->load(["student.class", "details.unit.item"]);
+
+        if ($transaction->student && $transaction->student->class) {
+            $transaction->student->class->append("full_name");
+        }
+
+        return response()->json($transaction);
     }
 
-    public function processReturn(ReturnTransactionRequest $request, Transaction $transaction)
-    {
-        $updated = $this->returnService->process($transaction->id, $request->units);
+    public function processReturn(
+        ReturnTransactionRequest $request,
+        Transaction $transaction,
+    ) {
+        $updated = $this->returnService->process(
+            $transaction->id,
+            $request->units,
+            $request->notes,
+        );
+
+        if ($updated->student && $updated->student->class) {
+            $updated->student->class->append("full_name");
+        }
 
         return response()->json($updated);
     }

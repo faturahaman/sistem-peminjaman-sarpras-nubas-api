@@ -14,8 +14,9 @@ class ReturnTransactionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'units'   => ['required', 'array', 'min:1'],
-            'units.*' => ['integer'],
+            "units" => ["required", "array", "min:1"],
+            "units.*" => ["integer"],
+            "notes" => ["nullable", "string", "max:1000"],
         ];
     }
 }
